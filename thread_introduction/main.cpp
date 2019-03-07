@@ -9,9 +9,10 @@ std::vector<uint32_t> generateNumbers(size_t seed)
 {
     std::mt19937 generator(seed);
     std::vector<uint32_t> numbers;
+    size_t nb = (generator() % 1000000) + 100000;
 
-    numbers.reserve(1000000);
-    for (auto i = 0; i < 1000000; ++i)
+    numbers.reserve(nb);
+    for (size_t i = 0; i < nb; ++i)
     {
         numbers.emplace_back(generator());
     }
