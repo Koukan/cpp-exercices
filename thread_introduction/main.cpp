@@ -33,21 +33,32 @@ uint64_t computeHash(std::vector<uint32_t> const& numbers)
     return hash;
 }
 
+void writeHashList(std::vector<uint64_t> const& hash_list)
+{
+    std::fstream output_file("output.txt", std::ios_base::out | std::ios_base::trunc);
+    for (auto hash : hash_list)
+    {
+        output_file << hash << "\n";
+    }
+}
+
 int main(int, char**)
 {
-    std::fstream    output_file("output.txt", std::ios_base::out | std::ios_base::trunc);
+    std::vector<uint64_t> hash_list;
 
     for (size_t i = 0; i < 1000; ++i)
     {
         auto numbers = generateNumbers(i);
         sortNumbers(numbers);
-        output_file << computeHash(numbers) << "\n";
+        hash_list.push_back(computeHash(numbers));
 
         if ((i % 100) == 0)
         {
             std::cout << '\r' << (i / 10) << "%";
         }
     }
+
+    writeHashList(hash_list);
 
     return 0;
 }
