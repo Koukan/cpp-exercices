@@ -6,12 +6,13 @@
 ## Présentation
 
 Ci-joint des fichiers contenant quelques classes permettant de construire des
-images en mémoire puis de les exporter sous forme de fichiers png.
+images en mémoire puis de les exporter sous forme de fichiers ppm (lisible avec
+gimp par exemple).
 
 Les sources sont dans l'arborescence src et sont en c++11.
 
-Le dossier racine contient un fichier Jamroot permettant de construire le
-projet avec boost.build (bjam). Vous pouvez créer votre propre makefile
+Le dossier racine contient un fichier CMakeLists permettant de construire le
+projet avec cmake. Vous pouvez créer votre propre makefile
 ou utiliser n'importe quel autre système de build (cmake, scons, Visual Studio,
 etc.si vous préférer, mais dans ce cas vous devrez le créer vous même. Pas
 de panique le fichier de build est très simple.

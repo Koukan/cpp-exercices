@@ -1,7 +1,5 @@
 #pragma once
 
-#include "utils/sugar/std_stream_proto.hpp"
-
 #include <utility>
 #include <iosfwd>
 #include <algorithm> // min max
@@ -224,7 +222,9 @@ struct Rect {
         }
     }
 
-    REDEMPTION_FRIEND_OSTREAM(out, Rect const & r) {
+    template<class Ch, class Tr>
+    friend std::basic_ostream<Ch, Tr>& operator<<(std::basic_ostream<Ch, Tr>& out, Rect const & r)
+    {
         return out << "(" << r.x << ", " << r.y << ", " << r.cx << ", " << r.cy << ")";
     }
 

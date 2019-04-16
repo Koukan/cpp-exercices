@@ -7,7 +7,6 @@
 #include "utils/image_data_view.hpp"
 #include "utils/colors.hpp"
 #include "utils/rect.hpp"
-#include "utils/ellipse.hpp"
 #include "utils/bitfu.hpp"
 
 using std::size_t;
@@ -516,95 +515,6 @@ public:
         const size_t n = rect.cx * Bpp;
         for (cP pe = p + rect.cy * step; p < pe; p += step) {
             memset(p, c, n);
-        }
-    }
-
-    template<typename Op2>
-    void draw_ellipse(const Ellipse & el, const uint8_t fill, const color_t color)
-    {
-        Op2 op;
-        const int cX = el.center_x();
-        const int cY = el.center_y();
-        const int rX = el.radius_x();
-        const int rY = el.radius_y();
-        const int rXcarre = rX*rX;
-        const int rYcarre = rY*rY;
-        int errX = 0;
-        int pX = rX;
-        int pY = 0;
-        int borX = rYcarre*rX;
-        int borY = 0;
-
-        this->colordot(cX+pX, cY, color, op);
-        this->colordot(cX-pX, cY, color, op);
-        if (fill) {
-            this->colorline(cX-pX + 1, cY, 2*pX - 1, color, op);
-        }
-        if (errX > pX*rYcarre) {
-            errX -= (2*pX - 1)*rYcarre;
-            pX--;
-            borX -= rYcarre;
-        }
-        errX += (2*pY + 1)*rXcarre;
-        pY++;
-        borY += rXcarre;
-        int lastchange = 0;
-        while ((borX > borY) && (pY <= rY)) {
-            lastchange = 0;
-            this->colordot(cX+pX, cY+pY, color, op);
-            this->colordot(cX+pX, cY-pY, color, op);
-            this->colordot(cX-pX, cY+pY, color, op);
-            this->colordot(cX-pX, cY-pY, color, op);
-            if (fill) {
-                this->colorline(cX-pX + 1, cY+pY, 2*pX - 1, color, op);
-                this->colorline(cX-pX + 1, cY-pY, 2*pX - 1, color, op);
-            }
-            if (errX > pX*rYcarre) {
-                errX -= (2*pX - 1)*rYcarre;
-                pX--;
-                borX -= rYcarre;
-                lastchange = 1;
-            }
-            errX += (2*pY + 1)*rXcarre;
-            pY++;
-            borY += rXcarre;
-        }
-        int lastpX = pX + lastchange;
-        int lastpY = pY - 1;
-        int errY = 0;
-        pX = 0;
-        pY = rY;
-        if ((fill && ((pX < lastpX) && (pY > lastpY))) ||
-            (!fill && ((pX < lastpX) || (pY > lastpY)))) {
-            this->colordot(cX, cY+pY, color, op);
-            this->colordot(cX, cY-pY, color, op);
-            if (errY > pY*rXcarre) {
-                errY -= (2*pY - 1)*rXcarre;
-                pY--;
-                if (fill && pY > lastpY) {
-                    this->colorline(cX, cY + pY, 2*pX + 1, color, op);
-                }
-            }
-            errY += (2*pX + 1)*rYcarre;
-            pX++;
-        }
-        while (((fill && (pX <= lastpX && pY > lastpY)) ||
-                (!fill && ((pX < lastpX) || (pY > lastpY)))) &&
-               (pX <= rX)) {
-            this->colordot(cX+pX, cY+pY, color, op);
-            this->colordot(cX+pX, cY-pY, color, op);
-            this->colordot(cX-pX, cY+pY, color, op);
-            this->colordot(cX-pX, cY-pY, color, op);
-            if (errY > pY*rXcarre) {
-                errY -= (2*pY - 1)*rXcarre;
-                pY--;
-                if (fill && (pY > lastpY)) {
-                    this->colorline(cX-pX, cY+pY, 2*pX+1, color, op);
-                    this->colorline(cX-pX, cY-pY, 2*pX+1, color, op);
-                }
-            }
-            errY += (2*pX + 1)*rYcarre;
-            pX++;
         }
     }
 
@@ -1281,64 +1191,6 @@ private:
 //  (o), NOT (n), and XOR (x) Boolean operators.
 
 public:
-    void ellipse(const Ellipse & el, const uint8_t rop, const uint8_t fill, const Color color) {
-        if (this->tracked_area.has_intersection(el.get_rect())) {
-            this->tracked_area_changed = true;
-        }
-        switch (rop) {
-        case 0x01: // R2_BLACK
-            this->impl().draw_ellipse<Ops::Op2_0x01>(el, fill, color);
-            break;
-        case 0x02: // R2_NOTMERGEPEN
-            this->impl().draw_ellipse<Ops::Op2_0x02>(el, fill, color);
-            break;
-        case 0x03: // R2_MASKNOTPEN
-            this->impl().draw_ellipse<Ops::Op2_0x03>(el, fill, color);
-            break;
-        case 0x04: // R2_NOTCOPYPEN
-            this->impl().draw_ellipse<Ops::Op2_0x04>(el, fill, color);
-            break;
-        case 0x05: // R2_MASKPENNOT
-            this->impl().draw_ellipse<Ops::Op2_0x05>(el, fill, color);
-            break;
-        case 0x06:  // R2_NOT
-            this->impl().draw_ellipse<Ops::Op2_0x06>(el, fill, color);
-            break;
-        case 0x07:  // R2_XORPEN
-            this->impl().draw_ellipse<Ops::Op2_0x07>(el, fill, color);
-            break;
-        case 0x08:  // R2_NOTMASKPEN
-            this->impl().draw_ellipse<Ops::Op2_0x08>(el, fill, color);
-            break;
-        case 0x09:  // R2_MASKPEN
-            this->impl().draw_ellipse<Ops::Op2_0x09>(el, fill, color);
-            break;
-        case 0x0A:  // R2_NOTXORPEN
-            this->impl().draw_ellipse<Ops::Op2_0x0A>(el, fill, color);
-            break;
-        case 0x0B:  // R2_NOP
-            break;
-        case 0x0C:  // R2_MERGENOTPEN
-            this->impl().draw_ellipse<Ops::Op2_0x0C>(el, fill, color);
-            break;
-        case 0x0D:  // R2_COPYPEN
-            this->impl().draw_ellipse<Ops::Op2_0x0D>(el, fill, color);
-            break;
-        case 0x0E:  // R2_MERGEPENNOT
-            this->impl().draw_ellipse<Ops::Op2_0x0E>(el, fill, color);
-            break;
-        case 0x0F:  // R2_MERGEPEN
-            this->impl().draw_ellipse<Ops::Op2_0x0F>(el, fill, color);
-            break;
-        case 0x10: // R2_WHITE
-            this->impl().draw_ellipse<Ops::Op2_0x10>(el, fill, color);
-            break;
-        default:
-            this->impl().draw_ellipse<Ops::Op2_0x0D>(el, fill, color);
-            break;
-        }
-    }
-
     // low level opaquerect,
     // mostly avoid clipping because we already took care of it
     // also we already swapped color if we are using BGR instead of RGB
@@ -1689,7 +1541,7 @@ public:
     ) {
         LineEquation equa(xStart, yStart, xEnd, yEnd);
 
-        if (not equa.resolve(clip)) {
+        if (!equa.resolve(clip)) {
             return;
         }
 

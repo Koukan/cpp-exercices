@@ -7,8 +7,6 @@
 #include <cstddef>
 #include <cstring> // strcasecmp
 
-#include "utils/sugar/std_stream_proto.hpp"
-
 // Those are in BGR
 enum NamedBGRColor {
     BLACK                     = 0x000000,
@@ -56,6 +54,10 @@ enum NamedBGRColor {
     BROWN                     = 0x006AC5
 };
 
+#ifdef _MSC_VER 
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#endif
 
 struct BGRasRGBColor;
 
@@ -110,7 +112,8 @@ constexpr BGRColor::BGRColor(BGRasRGBColor const & color) noexcept
 constexpr bool operator == (BGRColor const & lhs, BGRColor const & rhs) { return lhs.to_u32() == rhs.to_u32(); }
 constexpr bool operator != (BGRColor const & lhs, BGRColor const & rhs) { return !(lhs == rhs); }
 
-REDEMPTION_OSTREAM(out, BGRColor c)
+template<class Ch, class Tr>
+std::basic_ostream<Ch, Tr>& operator<<(std::basic_ostream<Ch, Tr>& out, BGRColor c)
 {
     char const * thex = "0123456789ABCDEF";
     char s[]{
@@ -153,14 +156,16 @@ constexpr bool operator == (RDPColor const & lhs, RDPColor const & rhs)
 constexpr bool operator != (RDPColor const & lhs, RDPColor const & rhs)
 { return !(lhs == rhs); }
 
-REDEMPTION_OSTREAM(out, RDPColor c)
+template<class Ch, class Tr>
+std::basic_ostream<Ch, Tr>& operator<<(std::basic_ostream<Ch, Tr>& out, RDPColor c)
 { return out << c.as_bgr(); }
 
 constexpr uint32_t log_value(RDPColor const & c) noexcept { return c.as_bgr().to_u32(); }
 
 
-struct BGRPalette
+class BGRPalette
 {
+public:
     BGRPalette() = delete;
 
     template<class BGRValue>
